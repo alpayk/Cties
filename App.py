@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from flask import Flask
 app = Flask(__name__)
 
@@ -10,7 +11,21 @@ def verify(answer):
 
 @app.route('/country_list')
 def country_list():
-    return json.dumps(countries)
+    conn = sqlite3.connect('ccs.sqlite')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    #for row in c.execute('SELECT * FROM countries'):
+    #    print(row)
+    rows = c.execute('SELECT * FROM countries').fetchall()
+    conn.commit()
+    conn.close()
+
+    result = []
+
+    for i in rows:
+        result.append({'id': i['id'], 'name': i['name']})
+
+    return json.dumps(result)
 
 @app.route('/question/<int:country_id>')
 def question(country_id):
