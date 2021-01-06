@@ -49,6 +49,9 @@ def question(country_id = -1):
     else:
         row = c.execute(f'SELECT * FROM questions WHERE country = {country_id} ORDER BY RANDOM() LIMIT 1;').fetchone()
     
+    if row == None:
+        return 'No questions available for this country'
+    
     answers = [int(row['city'])]
 
     while len(answers) < 5:
