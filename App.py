@@ -1,21 +1,29 @@
 import json
 import sqlite3
+import random
 from flask import Flask
 app = Flask(__name__)
 
-countries = [{'id': 1, 'name': 'Turkey'},{'id': 2, 'name': 'Russia'},{'id': 3, 'name': 'Ukraine'}]
+@app.route('/verify/<int:question>/<int:answer>')
+def verify(question, answer):
+    conn = sqlite3.connect('ccs.sqlite')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
 
-@app.route('/verify/<answer>')
-def verify(answer):
-    return True
+    row = c.execute(f'SELECT city FROM questions WHERE id = {question}').fetchone()
+    conn.commit()
+    conn.close()
+    if row['city'] == answer:
+        return "Correct"
+    else:
+        return "Incorrect"
 
 @app.route('/country_list')
 def country_list():
     conn = sqlite3.connect('ccs.sqlite')
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    #for row in c.execute('SELECT * FROM countries'):
-    #    print(row)
+
     rows = c.execute('SELECT * FROM countries').fetchall()
     conn.commit()
     conn.close()
@@ -27,21 +35,37 @@ def country_list():
 
     return json.dumps(result)
 
+@app.route('/question/')
 @app.route('/question/<int:country_id>')
-def question(country_id):
+def question(country_id = -1):
     question = {}
-    if country_id == 1:
-        question['url'] = 'https://www.google.com/maps/@38.7207494,35.4823757,3a,75y,88.09h,92.6t/data=!3m7!1e1!3m5!1sJ4YsSn9Um_0Y_YKK82x26A!2e0!6s%2F%2Fgeo2.ggpht.com%2Fcbk%3Fpanoid%3DJ4YsSn9Um_0Y_YKK82x26A%26output%3Dthumbnail%26cb_client%3Dmaps_sv.tactile.gps%26thumb%3D2%26w%3D203%26h%3D100%26yaw%3D11.282314%26pitch%3D0%26thumbfov%3D100!7i16384!8i8192'
-        question['options'] = [{'id':10, 'name': 'Kayseri'}, {'id':11, 'name': 'Adana'}, {'id':12, 'name': 'İstanbul'}, {'id':13, 'name': 'Bartın'}, {'id':14, 'name': 'Yalova'}]
-        question['text'] = 'Burası hangi şehir?'
-    elif country_id == 2:
-        question['url'] = 'https://www.google.com/maps/@55.7537707,37.6220942,2a,75y,285.61h,92.62t/data=!3m6!1e1!3m4!1swi-G1Ke9J0948AKcnQhuZw!2e0!7i13312!8i6656'
-        question['options'] = [{'id':15, 'name': 'Moscow'}, {'id':16, 'name': 'Saint Petersburg'}, {'id':17, 'name': 'Novosibirsk'}, {'id':18, 'name': 'Yekaterinburg'}, {'id':19, 'name': 'Kazan'}]
-        question['text'] = 'Burası hangi şehir?'
-    elif country_id == 3:
-        question['url'] = 'https://www.google.com/maps/@48.4623681,35.0758052,3a,75y,352.68h,88.68t/data=!3m8!1e1!3m6!1sAF1QipOGoxXl9yKwosMlte3sv0L-LXMJuJfV1Fdnr-6-!2e10!3e11!6shttps:%2F%2Flh5.googleusercontent.com%2Fp%2FAF1QipOGoxXl9yKwosMlte3sv0L-LXMJuJfV1Fdnr-6-%3Dw203-h100-k-no-pi0-ya278.66345-ro-0-fo100!7i8000!8i4000'
-        question['options'] = [{'id':20, 'name': 'Kyiv'}, {'id':21, 'name': 'Kharkiv'}, {'id':22, 'name': 'Odessa'}, {'id':23, 'name': 'Dnipro'}, {'id':24, 'name': 'Donetsk'}]
-        question['text'] = 'Burası hangi şehir?'
+
+    conn = sqlite3.connect('ccs.sqlite')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    if country_id == -1:
+        row = c.execute('SELECT * FROM questions ORDER BY RANDOM() LIMIT 1;').fetchone()
+    else:
+        row = c.execute(f'SELECT * FROM questions WHERE country = {country_id} ORDER BY RANDOM() LIMIT 1;').fetchone()
+    
+    answers = [int(row['city'])]
+
+    while len(answers) < 5:
+        temp_rand = random.randint(1, 48313) # Current # of cities
+        if temp_rand != answers[0]:
+            answers.append(temp_rand)
+
+    rows = c.execute(f'SELECT * FROM cities WHERE id IN ({str(answers)[1:-1]})').fetchall()
+    question['options'] = []
+
+    for i in rows:
+        question['options'].append({'id': i['id'], 'name': i['name']})
+
+    question['url'] = row['url']
+    question['id'] = row['id']
+    question['text'] = row['question']
+
     return json.dumps(question)
 
 if __name__ == '__main__':
