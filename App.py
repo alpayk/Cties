@@ -9,7 +9,7 @@ def verify(question, answer):
     conn = sqlite3.connect('ccs.sqlite')
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-
+    
     row = c.execute(f'SELECT city FROM questions WHERE id = {question}').fetchone()
     conn.commit()
     conn.close()
@@ -24,7 +24,8 @@ def country_list():
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    rows = c.execute('SELECT * FROM countries').fetchall()
+    #rows = c.execute('SELECT * FROM countries').fetchall()
+    rows = c.execute('SELECT DISTINCT questions.country AS id, countries.name FROM questions, countries WHERE questions.country = countries.id').fetchall()
     conn.commit()
     conn.close()
 
@@ -51,12 +52,12 @@ def question(country_id = -1):
     
     if row == None:
         return 'No questions available for this country'
-    
+
     answers = [int(row['city'])]
 
     while len(answers) < 5:
         temp_rand = random.randint(1, 48313) # Current # of cities
-        if temp_rand != answers[0]:
+        if temp_rand not in answers:
             answers.append(temp_rand)
 
     rows = c.execute(f'SELECT * FROM cities WHERE id IN ({str(answers)[1:-1]})').fetchall()
