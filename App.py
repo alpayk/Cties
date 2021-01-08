@@ -14,9 +14,9 @@ def verify(question, answer):
     conn.commit()
     conn.close()
     if row['city'] == answer:
-        return "1"
+        return '1'
     else:
-        return "0"
+        return '0'
 
 @app.route('/country_list')
 def country_list():
