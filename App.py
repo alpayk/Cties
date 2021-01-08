@@ -55,7 +55,7 @@ def question(country_id = -1):
 
     answers = [int(row['city'])]
 
-    while len(answers) < 5:
+    while len(answers) < 4:
         temp_rand = random.randint(1, 48313) # Current # of cities
         if temp_rand not in answers:
             answers.append(temp_rand)
