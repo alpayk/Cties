@@ -22,4 +22,4 @@ Verilen cevabı kontrol etmek için. question_id' yi üstteki api' den aldığı
 
 URL: https://cties.herokuapp.com/verify/<question_id>/<answer_id>
 
-Örnek Data: http://localhost:5000/verify/1/40760   -->   Correct / Incorrect
+Örnek Data: https://cties.herokuapp.com/verify/1/40760   -->   Correct / Incorrect
