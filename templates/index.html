@@ -1,0 +1,66 @@
+<html>
+	<head>
+		<title>Question Input</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+		<script>
+			$( function() {
+				$( "#answer" ).autocomplete({
+					source: function(request, response, url) {
+						$.ajax({
+							url: '/city/' + $( "#answer" ).val(),
+							dataType: "json",
+							type: "GET",
+							success: function (data) {
+								response($.map(data, function(item) {
+									return { label: item.name, value: item.id, id: item.id };
+								}));
+							}
+						});
+					}
+				});
+			} );
+			function setAction(form) {
+				$.ajax({
+					url: '/save_question',
+					//dataType: "json",
+					type: "POST",
+					contentType: "application/json; charset=utf-8",
+					data: JSON.stringify({ "url": form["url"].value, "question": form["question"].value, "answer": form["answer"].value }),
+					success: function (data) {
+						alert("question saved");
+						form.reset();
+					},
+					error: function (data) {
+						alert("error occurred");
+						form.reset();
+					}
+				});
+				return false;
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Add Question</h1>
+		<form onsubmit="return setAction(this)">
+			<label>
+				<h2>URL:</h2>
+			</label>
+			<input id="url" type="text"/>
+			<label>
+				<h2>Question:</h2>
+			</label>
+			<input id="question" type="text" value="Burası hangi şehir?"/>
+			<label>
+				<h2>Answer:</h2>
+			</label>
+			<input id="answer" type="text"/>
+			<br />
+			<br />
+			<input type="submit" id="submit_question" value="Submit Question" />
+		</form>
+	</body>
+</html>
