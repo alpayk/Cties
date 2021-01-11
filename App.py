@@ -117,6 +117,5 @@ def question(country_id = -1):
 if __name__ == '__main__':
    app.run()
 
-
 # no input - ülke listesi 
 # input ülke ismi - şehir sorusu

@@ -23,9 +23,36 @@
 					}
 				});
 			} );
+
+			function validURL(str) {
+				var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+					'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+					'((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+					'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*','i'); // fragment locator
+				return !!pattern.test(str);
+			}
+
 			function setAction(form) {
+				if(form["url"].value.length == 0) {
+					alert("URL is a mandatory field");
+					return false;
+				} else if (!validURL(form["url"].value)) {
+					alert("Please enter a valid URL");
+					return false;
+				}
+
+				if(form["question"].value.length == 0){
+					alert("Question is a mandatory field");
+					return false;
+				}
+
+				if(form["answer"].value.length == 0){
+					alert("Answer is a mandatory field. It autocompletes. Be patient");
+					return false;
+				}
+					
 				$.ajax({
-					url: '/save_question',
+					url: "/save_question",
 					//dataType: "json",
 					type: "POST",
 					contentType: "application/json; charset=utf-8",
